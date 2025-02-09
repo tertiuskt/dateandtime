@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Display</title>
+    <style>
+        /* Previous styles remain the same until .time */
+        :root[data-theme="light"] {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --secondary-text: #333333;
+            --toggle-bg: #ddd;
+            --toggle-circle: #fff;
+        }
+        
+        :root[data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --secondary-text: #cccccc;
+            --toggle-bg: #555;
+            --toggle-circle: #1a1a1a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .clock-container {
+            text-align: center;
+            padding: 3rem;
+            position: relative;
+            width: 100%;
+            max-width: 95vw;
+        }
+
+        .time {
+            font-size: min(9rem, 12vw);
+            font-weight: bold;
+            margin: 1rem 0;
+            line-height: 1.1;
+            white-space: nowrap;
+        }
+
+        .date {
+            font-size: min(3.5rem, 6vw);
+            margin: 1rem 0;
+            color: var(--secondary-text);
+            line-height: 1.2;
+        }
+
+        /* Rest of the styles remain the same */
+        .theme-switch-wrapper {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-switch {
+            display: inline-block;
+            height: 34px;
+            width: 60px;
+            position: relative;
+        }
+
+        .theme-switch input {
+            display: none;
+        }
+
+        .slider {
+            background-color: var(--toggle-bg);
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            background-color: var(--toggle-circle);
+            bottom: 4px;
+            content: "";
+            height: 26px;
+            left: 4px;
+            position: absolute;
+            transition: .4s;
+            width: 26px;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .error {
+            color: #ff0000;
+            margin: 1rem 0;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 700px) {
+            .clock-container {
+                padding: 2rem 1rem;
+            }
+            .theme-switch-wrapper {
+                top: 10px;
+                right: 10px;
+            }
+        }
+    </style>
+</head>
+<!-- Rest of the HTML and JavaScript remains exactly the same -->
+<body>
+    <div class="clock-container">
+        <div class="theme-switch-wrapper">
+            <label class="theme-switch" for="theme-toggle">
+                <input type="checkbox" id="theme-toggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="date" id="date"></div>
+        <div class="time" id="clock"></div>
+        <div id="error" class="error" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Previous JavaScript remains exactly the same
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        const errorDisplay = document.getElementById('error');
+
+        function setTheme(theme) {
+            try {
+                html.setAttribute('data-theme', theme);
+                localStorage.setItem('theme', theme);
+                themeToggle.checked = theme === 'dark';
+            } catch (error) {
+                console.error('Error setting theme:', error);
+            }
+        }
+
+        function showError(message) {
+            errorDisplay.textContent = message;
+            errorDisplay.style.display = 'block';
+            setTimeout(() => {
+                errorDisplay.style.display = 'none';
+            }, 5000);
+        }
+
+        themeToggle.addEventListener('change', function() {
+            setTheme(this.checked ? 'dark' : 'light');
+        });
+
+        try {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            setTheme(savedTheme);
+        } catch (error) {
+            console.error('Error loading saved theme:', error);
+            setTheme('light');
+        }
+
+        function formatTime(hours, minutes, seconds, ampm) {
+            try {
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                minutes = String(minutes).padStart(2, '0');
+                seconds = String(seconds).padStart(2, '0');
+                return `${hours}:${minutes}:${seconds} ${ampm}`;
+            } catch (error) {
+                console.error('Error formatting time:', error);
+                return 'Time unavailable';
+            }
+        }
+
+        function formatDate(date) {
+            try {
+                const options = { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                };
+                return date.toLocaleDateString('en-US', options);
+            } catch (error) {
+                console.error('Error formatting date:', error);
+                return 'Date unavailable';
+            }
+        }
+
+        function updateTime() {
+            try {
+                const now = new Date();
+                const hours = now.getHours();
+                const minutes = now.getMinutes();
+                const seconds = now.getSeconds();
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                
+                const clockElement = document.getElementById('clock');
+                const dateElement = document.getElementById('date');
+                
+                if (clockElement && dateElement) {
+                    clockElement.textContent = formatTime(hours, minutes, seconds, ampm);
+                    dateElement.textContent = formatDate(now);
+                } else {
+                    throw new Error('Clock or date element not found');
+                }
+            } catch (error) {
+                console.error('Error updating time:', error);
+                showError('Error updating time. Refreshing page may help.');
+            }
+        }
+
+        try {
+            updateTime();
+            const intervalId = setInterval(updateTime, 1000);
+            
+            window.addEventListener('unload', () => {
+                clearInterval(intervalId);
+            });
+        } catch (error) {
+            console.error('Error initializing clock:', error);
+            showError('Error initializing clock. Please refresh the page.');
+        }
+    </script>
+</body>
+</html>
