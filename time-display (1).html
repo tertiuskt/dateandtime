@@ -239,6 +239,25 @@
             console.error('Error initializing clock:', error);
             showError('Error initializing clock. Please refresh the page.');
         }
+    // Fullscreen toggle functionality - for testing - Added on 09/02/2025
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.error(`Error attempting to enter fullscreen: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen().catch(err => {
+                console.error(`Error attempting to exit fullscreen: ${err.message}`);
+            });
+        }
+    }
+
+    // Event listener for the 'F' key press
+    window.addEventListener('keydown', function(event) {
+        if (event.key === 'F' || event.key === 'f') {
+            toggleFullScreen();
+        }
+    });
     </script>
 </body>
 </html>
